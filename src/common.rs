@@ -9,14 +9,14 @@
 //! Common functionality between multiple OPRF modes.
 
 use core::convert::TryFrom;
-use core::ops::Add;
+use core::{num::NonZeroU32, ops::Add};
 
 use derive_where::derive_where;
 use digest::{Digest, Output, OutputSizeUser};
 use generic_array::sequence::Concat;
 use generic_array::typenum::{IsLess, Unsigned, U2, U256, U9};
 use generic_array::{ArrayLength, GenericArray};
-use rand_core::{CryptoRng, RngCore};
+use rand_core::{TryCryptoRng, TryRngCore};
 use subtle::ConstantTimeEq;
 
 #[cfg(feature = "serde")]
@@ -128,7 +128,7 @@ pub struct Proof<CS: CipherSuite> {
 
 /// Can only fail with [`Error::Batch`].
 #[allow(clippy::many_single_char_names)]
-pub(crate) fn generate_proof<CS: CipherSuite, R: RngCore + CryptoRng>(
+pub(crate) fn generate_proof<CS: CipherSuite, R: TryRngCore + TryCryptoRng>(
     rng: &mut R,
     k: <CS::Group as Group>::Scalar,
     a: <CS::Group as Group>::Elem,
@@ -520,4 +520,43 @@ pub(crate) fn i2osp_2(input: usize) -> Result<[u8; 2], InternalError> {
 
 pub(crate) fn i2osp_2_array<L: ArrayLength + IsLess<U256>>() -> GenericArray<u8, U2> {
     L::U16.to_be_bytes().into()
+}
+
+/// Adapter allowing `rand_core 0.9` RNGs to satisfy the `elliptic_curve` 0.13
+/// requirement for `rand_core 0.6` traits.
+pub(crate) struct CompatRng<'a, R>(pub(crate) &'a mut R);
+
+impl<'a, R> elliptic_curve::rand_core::RngCore for CompatRng<'a, R>
+where
+    R: TryRngCore,
+{
+    fn next_u32(&mut self) -> u32 {
+        self.0.try_next_u32().expect("RNG failure")
+    }
+
+    fn next_u64(&mut self) -> u64 {
+        self.0.try_next_u64().expect("RNG failure")
+    }
+
+    fn fill_bytes(&mut self, dest: &mut [u8]) {
+        self.0
+            .try_fill_bytes(dest)
+            .expect("RNG failure while filling bytes");
+    }
+
+    fn try_fill_bytes(
+        &mut self,
+        dest: &mut [u8],
+    ) -> Result<(), elliptic_curve::rand_core::Error> {
+        self.0.try_fill_bytes(dest).map_err(|_| compat_error())?;
+        Ok(())
+    }
+}
+
+impl<'a, R> elliptic_curve::rand_core::CryptoRng for CompatRng<'a, R> where R: TryCryptoRng {}
+
+fn compat_error() -> elliptic_curve::rand_core::Error {
+    let code = NonZeroU32::new(elliptic_curve::rand_core::Error::CUSTOM_START)
+        .expect("CUSTOM_START must be non-zero");
+    elliptic_curve::rand_core::Error::from(code)
 }

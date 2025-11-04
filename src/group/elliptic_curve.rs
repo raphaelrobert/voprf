@@ -19,9 +19,10 @@ use elliptic_curve::{
 };
 use generic_array::typenum::{IsLess, IsLessOrEqual, Sum, U256};
 use generic_array::{ArrayLength, GenericArray};
-use rand_core::{CryptoRng, RngCore};
+use rand_core::{TryCryptoRng, TryRngCore};
 
 use super::Group;
+use crate::common::CompatRng;
 use crate::{Error, InternalError, Result};
 
 type ElemLen<C> = <ScalarLen<C> as ModulusSize>::CompressedPointSize;
@@ -93,8 +94,8 @@ where
             .map_err(|_| Error::Deserialization)
     }
 
-    fn random_scalar<R: RngCore + CryptoRng>(rng: &mut R) -> Self::Scalar {
-        *SecretKey::<Self>::random(rng).to_nonzero_scalar()
+    fn random_scalar<R: TryRngCore + TryCryptoRng>(rng: &mut R) -> Self::Scalar {
+        *SecretKey::<Self>::random(&mut CompatRng(rng)).to_nonzero_scalar()
     }
 
     fn invert_scalar(scalar: Self::Scalar) -> Self::Scalar {
