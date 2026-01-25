@@ -141,7 +141,7 @@ pub(crate) fn generate_proof<CS: CipherSuite, R: TryRngCore + TryCryptoRng>(
 
     let (m, z) = compute_composites::<CS, _, _>(Some(k), b, cs, ds, mode)?;
 
-    let r = CS::Group::random_scalar(rng);
+    let r = CS::Group::random_scalar(rng)?;
     let t2 = a * &r;
     let t3 = m * &r;
 

@@ -100,8 +100,11 @@ where
     /// is not a valid point on the group or the identity element.
     fn deserialize_elem(element_bits: &[u8]) -> Result<Self::Elem>;
 
-    /// picks a scalar at random
-    fn random_scalar<R: TryRngCore + TryCryptoRng>(rng: &mut R) -> Self::Scalar;
+    /// Picks a scalar at random.
+    ///
+    /// # Errors
+    /// [`Error::Rng`](crate::Error::Rng) if the random number generator fails.
+    fn random_scalar<R: TryRngCore + TryCryptoRng>(rng: &mut R) -> Result<Self::Scalar>;
 
     /// The multiplicative inverse of this scalar
     fn invert_scalar(scalar: Self::Scalar) -> Self::Scalar;

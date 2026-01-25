@@ -94,14 +94,14 @@ impl Group for Ristretto255 {
             .ok_or(Error::Deserialization)
     }
 
-    fn random_scalar<R: TryRngCore + TryCryptoRng>(rng: &mut R) -> Self::Scalar {
+    fn random_scalar<R: TryRngCore + TryCryptoRng>(rng: &mut R) -> Result<Self::Scalar> {
         loop {
             let mut scalar_bytes = [0u8; 32];
             rng.try_fill_bytes(&mut scalar_bytes)
-                .expect("RNG failure while filling scalar bytes");
+                .map_err(|_| Error::Rng)?;
 
             if let Ok(scalar) = Self::deserialize_scalar(&scalar_bytes) {
-                break scalar;
+                break Ok(scalar);
             }
         }
     }

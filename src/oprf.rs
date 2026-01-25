@@ -77,7 +77,7 @@ impl<CS: CipherSuite> OprfClient<CS> {
         input: &[u8],
         blinding_factor_rng: &mut R,
     ) -> Result<OprfClientBlindResult<CS>> {
-        let blind = CS::Group::random_scalar(blinding_factor_rng);
+        let blind = CS::Group::random_scalar(blinding_factor_rng)?;
         Self::deterministic_blind_unchecked_inner(input, blind)
     }
 
