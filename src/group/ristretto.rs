@@ -15,7 +15,7 @@ use digest::{FixedOutput, HashMarker};
 use elliptic_curve::hash2curve::{ExpandMsg, ExpandMsgXmd, Expander};
 use generic_array::typenum::{IsLess, IsLessOrEqual, U256, U32, U64};
 use generic_array::GenericArray;
-use rand_core::{CryptoRng, RngCore};
+use rand_core::{TryCryptoRng, TryRngCore};
 use subtle::ConstantTimeEq;
 
 use super::Group;
@@ -94,13 +94,14 @@ impl Group for Ristretto255 {
             .ok_or(Error::Deserialization)
     }
 
-    fn random_scalar<R: RngCore + CryptoRng>(rng: &mut R) -> Self::Scalar {
+    fn random_scalar<R: TryRngCore + TryCryptoRng>(rng: &mut R) -> Result<Self::Scalar> {
         loop {
             let mut scalar_bytes = [0u8; 32];
-            rng.fill_bytes(&mut scalar_bytes);
+            rng.try_fill_bytes(&mut scalar_bytes)
+                .map_err(|_| Error::Rng)?;
 
             if let Ok(scalar) = Self::deserialize_scalar(&scalar_bytes) {
-                break scalar;
+                break Ok(scalar);
             }
         }
     }

@@ -28,6 +28,8 @@ pub enum Error {
     ProofVerification,
     /// The protocol has failed and can't be completed.
     Protocol,
+    /// Random number generator failure.
+    Rng,
 }
 
 /// Only used to implement [`Group`](crate::Group).
