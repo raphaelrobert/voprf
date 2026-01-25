@@ -128,7 +128,8 @@ where
 /// Adapter allowing `rand_core 0.9` RNGs to satisfy the `elliptic_curve` 0.13
 /// requirement for `rand_core 0.6` traits.
 ///
-/// TODO #150: Remove this adapter when `elliptic_curve` migrates to `rand_core 0.9`.
+/// TODO #150: Remove this adapter when `elliptic_curve` migrates to `rand_core
+/// 0.9`.
 struct CompatRng<'a, R>(&'a mut R);
 
 impl<'a, R> elliptic_curve::rand_core::RngCore for CompatRng<'a, R>
