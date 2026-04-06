@@ -8,8 +8,8 @@ license = "MIT"
 name = "voprf"
 readme = "README.md"
 repository = "https://github.com/facebook/voprf/"
-rust-version = "1.83"
-version = "0.6.0-pre.0"
+rust-version = "1.85"
+version = "0.6.0-pre.1"
 
 [features]
 alloc = []

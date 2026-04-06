@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.6.0-pre.1 (April 6, 2026)
+* MSRV bumped to 1.85
+* Updated rand_core dependency to 0.9
+* Updated rand dependency to 0.9
+* Updated subtle dependency to 2.6
+* Fixed docs issue
+
 ## 0.6.0-pre.0 (November 8, 2025)
 * MSRV bumped to 1.83
 * Updated Ristretto255 random scalar generation
